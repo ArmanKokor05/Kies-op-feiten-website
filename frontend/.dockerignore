@@ -1,0 +1,30 @@
+# VCS
+/.git
+/.gitignore
+/.github
+
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# IDE / editor
+.idea
+
+# Node & npm
+node_modules
+npm-debug.log
+yarn-error.log
+.lock
+*.tgz
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Vue build artifacts
+dist
+build
+
+# Misc
+*.log
+*.temp

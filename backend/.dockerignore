@@ -1,0 +1,11 @@
+/.mvn
+/target
+.git
+.gitignore
+*.log
+*.class
+*.iml
+.idea/
+*.pyc
+*.md
+.env

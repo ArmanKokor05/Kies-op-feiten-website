@@ -1,0 +1,58 @@
+variables:
+  DEPLOY_MKDOCS: "true"
+  DEPLOY_HIC: "false"
+  GIT_DEPTH: 0
+  GIT_STRATEGY: clone
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+
+include:
+  - ".gitlab-ci.mkdocs.yml"
+
+stages:
+  - build
+  - deploy
+
+services:
+  - docker:24.0.5-dind
+
+before_script:
+  - echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin gitlab.fdmci.hva.nl:5050
+
+build-backend:
+  stage: build
+  tags:
+    - docker
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/spring-app:latest ./backend
+    - docker push $CI_REGISTRY_IMAGE/spring-app:latest
+  only:
+    - main
+
+build-frontend:
+  stage: build
+  tags:
+    - docker
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE/vue-app:latest ./frontend
+    - docker push $CI_REGISTRY_IMAGE/vue-app:latest
+  only:
+    - main
+
+deploy:
+  stage: deploy
+  tags: 
+    - docker
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache sshpass openssh-client
+  script:
+    - sshpass -p "$DEPLOY_PASSWORD" ssh -o StrictHostKeyChecking=no $DEPLOY_USER@$DEPLOY_HOST "
+        echo $CI_JOB_TOKEN | docker login -u gitlab-ci-token --password-stdin gitlab.fdmci.hva.nl:5050 &&
+        cd /home/deployuser/project &&
+        /usr/local/bin/docker-compose pull &&
+        /usr/local/bin/docker-compose up -d
+      "
+
+  only:
+    - main
